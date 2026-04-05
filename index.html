@@ -222,7 +222,30 @@
 
         // Advanced Circle Detection for Mobile
         function detectCircleGesture() {
-            if (gesturePoints.length < 15) return false;
+    if (gesturePoints.length < 20) return false;
+
+    let totalAngle = 0;
+
+    for (let i = 1; i < gesturePoints.length - 1; i++) {
+        const p1 = gesturePoints[i - 1];
+        const p2 = gesturePoints[i];
+        const p3 = gesturePoints[i + 1];
+
+        const angle1 = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        const angle2 = Math.atan2(p3.y - p2.y, p3.x - p2.x);
+
+        let delta = angle2 - angle1;
+
+        // Normalize angle
+        if (delta > Math.PI) delta -= 2 * Math.PI;
+        if (delta < -Math.PI) delta += 2 * Math.PI;
+
+        totalAngle += delta;
+    }
+
+    // 👉 Clockwise = positive rotation
+    return totalAngle > Math.PI;
+        };
             
             // Find gesture center
             const center = gesturePoints.reduce((acc, p) => ({
