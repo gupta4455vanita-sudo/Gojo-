@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Domain Expansion: Unlimited Void 📱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            background: #000;
+            height: 100vh;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        #canvas {
+            display: block;
+            background: radial-gradient(circle at center, #1a0033 0%, #000 70%);
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            color: #fff;
+            z-index: 1000;
+            font-size: 16px;
+            text-shadow: 0 0 10px #00ffff;
+            text-align: center;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+        }
+
+        #gestureIndicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            color: #00ffff;
+            text-shadow: 0 0 30px #00ffff;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1001;
+            pointer-events: none;
+        }
+
+        #title {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            opacity: 0;
+            z-index: 1002;
+            pointer-events: none;
+            text-shadow: 0 0 20px #00ffff;
+            line-height: 1.2;
+        }
+
+        .active {
+            animation: glow 0.8s infinite alternate;
+        }
+
+        @keyframes glow {
+            0% { 
+                text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% { 
+                text-shadow: 0 0 40px #00ffff, 0 0 80px #ff00ff;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        .circle-guide {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            border: 3px dashed #00ffff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.3;
+            z-index: 999;
+            pointer-events: none;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div id="controls">
+        👆 Finger se <strong>Clockwise Circle</strong> banao center me!<br>
+        ✨ <strong>Domain Activate</strong> ho jayega automatically!
+    </div>
+    
+    <div class="circle-guide" id="circleGuide"></div>
+    <div id="gestureIndicator">✋</div>
+    <div id="title">
+        DOMAIN EXPANSION<br>
+        <span style="font-size: 28px; color: #00ffff;">無量空処<br>UNLIMITED VOID</span>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const gestureIndicator = document.getElementById('gestureIndicator');
+        const title = document.getElementById('title');
+        const circleGuide = document.getElementById('circleGuide');
+
+        // Fullscreen canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let touches = [];
+        let gesturePoints = [];
+        let domainActive = false;
+        let particles = [];
+        let time = 0;
+        let circleCenter = { x: canvas.width / 2, y: canvas.height / 2 };
+
+        // Particle System
+        class Particle {
+            constructor(x, y) {
+                this.reset(x, y);
+            }
+
+            reset(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                this.size = Math.random() * 4 + 1;
+                this.life = 1;
+                this.decay = Math.random() * 0.015 + 0.008;
+                this.hue = 240 + Math.random() * 60;
+                this.saturation = 100;
+                this.lightness = 60;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vx *= 0.97;
+                this.vy *= 0.97;
+                this.life -= this.decay;
+                this.hue = (this.hue + 2) % 360;
+                this.lightness = Math.min(90, this.lightness + 0.5);
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.translate(this.x, this.y);
+                
+                // Multiple glow layers
+                for (let i = 0; i < 3; i++) {
+                    ctx.shadowColor = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, 0.6)`;
+                    ctx.shadowBlur = 10 + i * 15;
+                    
+                    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size * 3);
+                    gradient.addColorStop(0, `hsla(${this.hue}, ${this.saturation}%, ${this.lightness + 20}%, ${0.9 - i * 0.2})`);
+                    gradient.addColorStop(1, 'transparent');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size * (3 - i), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        // Touch Events - Mobile Optimized
+        canvas.addEventListener('touchstart', handleTouch, { passive: false });
+        canvas.addEventListener('touchmove', handleTouch, { passive: false });
+        canvas.addEventListener('touchend', handleTouch, { passive: false });
+
+        function handleTouch(e) {
+            e.preventDefault();
+            touches = Array.from(e.touches);
+            
+            touches.forEach(touch => {
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                
+                if (!domainActive) {
+                    gesturePoints.push({ x, y, time: Date.now() });
+                    if (gesturePoints.length > 30) gesturePoints.shift();
+                }
+            });
+        }
+
+        // Advanced Circle Detection for Mobile
+        function detectCircleGesture() {
+            if (gesturePoints.length < 15) return false;
+            
+            // Find gesture center
+            const center = gesturePoints.reduce((acc, p) => ({
+                x: acc.x + p.x / gesturePoints.length,
+                y: acc.y + p.y / gesturePoints.length
+            }), { x: 0, y: 0 });
+            
+            // Calculate radius and angles
+            let angles = [];
+            let distances = [];
+            
+            gesturePoints.forEach(p => {
+                const dx = p.x - center.x;
+                const dy = p.y - center.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx);
+                
+                distances.push(distance);
+                angles.push(angle);
+            });
+            
+            const avgRadius = distances.reduce((a, b) => a + b) / distances.length;
+            const radiusVariance = distances.map(d => Math.abs(d - avgRadius)).reduce((a, b) => a + b) / distances.length;
+            
+            // Check for clockwise rotation
+            let totalAngleChange = 0;
+            for (let i = 1; i < angles.length; i++) {
+                let delta = angles[i] - angles[i - 1];
+                if (delta < -Math.PI) delta += Math.PI * 2;
+                totalAngleChange += delta;
+            }
+            
+            return radiusVariance < 30 && Math.abs(totalAngleChange) > Math.PI * 1.2;
+        }
+
+        // Domain Activation
+        function activateDomain() {
+            domainActive = true;
+            gestureIndicator.classList.add('active');
+            gestureIndicator.style.opacity = '1';
+            title.style.opacity = '1';
+            circleGuide.style.opacity = '0';
+            
+            // Massive particle explosion
+            for (let i = 0; i < 2000; i++) {
+                const p = new Particle(circleCenter.x, circleCenter.y);
+                p.vx *= 3;
+                p.vy *= 3;
+                particles.push(p);
+            }
+            
+            // Screen shake effect
+            canvas.style.transform = 'translate(5px, 5px)';
+            setTimeout(() => {
+                canvas.style.transform = 'translate(-5px, -5px)';
+            }, 100);
+            setTimeout(() => {
+                canvas.style.transform = 'translate(0, 0)';
+            }, 200);
+        }
+
+        // Main Animation Loop
+        function animate() {
+            time++;
+            
+            // Trail effect clear
+            ctx.fillStyle = domainActive ? 'rgba(10, 0, 30, 0.15)' : 'rgba(0, 0, 20, 0.12)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update circle center
+            circleCenter = { x: canvas.width / 2, y: canvas.height / 2 };
+            
+            // Stars background
+            if (Math.random() < 0.4) {
+                ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.4 + 0.1})`;
+                ctx.beginPath();
+                ctx.arc(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height,
+                    Math.random() * 1.5,
+                    0, Math.PI * 2
+                );
+                ctx.fill();
+            }
+            
+            // Gesture detection
+            if (!domainActive && touches.length > 0 && detectCircleGesture()) {
+                activateDomain();
+            }
+            
+            // Update particles
+            particles = particles.filter(p => {
+                p.update();
+                return p.life > 0;
+            });
+            
+            // Continuous emission in domain
+            if (domainActive) {
+                for (let i = 0; i < 8; i++) {
+                    particles.push(new Particle(
+                        circleCenter.x + (Math.random() - 0.5) * 200,
+                        circleCenter.y + (Math.random() - 0.5) * 200
+                    ));
+                }
+                
+                // Void distortion rings
+                ctx.save();
+                ctx.translate(circleCenter.x, circleCenter.y);
+                ctx.rotate(time * 0.002);
+                
+                for (let i = 0; i < 3; i++) {
+                    const radius = 150 + i * 100 + Math.sin(time * 0.03 + i) * 30;
+                    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+                    gradient.addColorStop(0, `rgba(0, 255, 255, ${0.15 - i * 0.05})`);
+                    gradient.addColorStop(0.7, `rgba(255, 0, 255, ${0.08 - i * 0.03})`);
+                    gradient.addColorStop(1, 'transparent');
+                    
+                    ctx.strokeStyle = gradient;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+            
+            // Draw all particles
+            particles.forEach(p => p.draw());
+            
+            requestAnimationFrame(animate);
+        }
+
+        // Start the magic! ✨
+        animate();
+    </script>
+</body>
+</html>
